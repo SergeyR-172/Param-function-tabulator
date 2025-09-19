@@ -3,6 +3,9 @@ from validators import n_validate, a_validate, k_validate, k1_validate, kd_valid
 from calculator import function_compute
 import os
 
+import matplotlib
+import matplotlib.pyplot as plt
+from flet.matplotlib_chart import MatplotlibChart
 
 class ParamInput(ft.TextField):
     def __init__(self, label, value, width, helper_text, validate_input = None):
@@ -113,7 +116,19 @@ class GraphApp(ft.Column):
             ], vertical_alignment=ft.CrossAxisAlignment.STRETCH),
         ]
 
-        self.on_compute(None)
+    def build_graph(self):
+        fig, ax = plt.subplots(figsize=(12, 8), dpi=150)
+        ax.plot(self.x_values, self.y_values, 'bo-', linewidth=2, markersize=4)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Значение аргумента', fontsize=12)
+        ax.set_ylabel('Значение функции', fontsize=12)
+        ax.set_title(f'График параметрической функции Y = f(x, {self.a_input.value})', fontsize=14, pad=20)
+
+        ax.tick_params(axis='both', which='major', labelsize=10)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+
+        return fig
 
 
     def on_compute(self, e):             
@@ -132,7 +147,8 @@ class GraphApp(ft.Column):
             float(self.k_input.value), 
             float(self.kd_input.value))
 
-        
+        self.data_table.rows.clear()
+
         for i in range(len(self.x_values)):
             self.data_table.rows.append(
                 ft.DataRow(
@@ -143,13 +159,20 @@ class GraphApp(ft.Column):
                     ]
                 )
             )
+        self.data_table.update()
+        
+        
+        new_graph = MatplotlibChart(figure=self.build_graph(), expand=True)
+        self.graph_container.content = new_graph
+        self.graph_container.update()
 
 def main(page: ft.Page):
     page.title = "Табулирование параметрической функции"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
-    page.add(GraphApp())
-    page.update()
+    app = GraphApp()
+    page.add(app)
+    app.on_compute(None)
 
 ft.app(main)
