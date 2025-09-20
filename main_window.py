@@ -2,6 +2,7 @@ import flet as ft
 from validators import n_validate, a_validate, k_validate, k1_validate, kd_validate
 from calculator import function_compute
 import os
+from dialogs import show_programmer_info, show_error_dialog
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -37,7 +38,7 @@ class ParamInput(ft.TextField):
 
 
 class GraphApp(ft.Column):
-    def __init__(self):
+    def __init__(self, page: ft.Page):
         super().__init__()
         self.expand = True
         self.alignment = ft.MainAxisAlignment.CENTER
@@ -50,11 +51,14 @@ class GraphApp(ft.Column):
         self.k_input = ParamInput(f"Коэффициент k (k > {self.k1_input.value})", "1", 200, f"Должно быть больше {self.k1_input.value}", lambda field: k_validate(field, self.k1_input))
         self.kd_input = ParamInput("Коэффициент для шага изменения аргумента (kd > 0)", "0.05", 200, "Введите положительное число", kd_validate)
 
-        self.compute_button = ft.ElevatedButton(
+        self.compute_button = ft.FilledButton(
             text="Вычислить",
             on_click=self.on_compute,
-            bgcolor=PRIMARY_COLOR,
-            color="white",
+            style=ft.ButtonStyle(
+                shape=ft.RoundedRectangleBorder(radius=8),
+                bgcolor=PRIMARY_COLOR,
+                color=ft.Colors.WHITE,
+            ),
             width=150,
             height=50,
         )
@@ -63,6 +67,7 @@ class GraphApp(ft.Column):
             fit=ft.ImageFit.CONTAIN,
             repeat=ft.ImageRepeat.NO_REPEAT,
             gapless_playback=False,
+            expand=True,
         )
         if os.path.exists("function_image.png"):
             function_image.src = "function_image.png"
@@ -124,6 +129,7 @@ class GraphApp(ft.Column):
                     ft.Text("Формула функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
                     function_image
                 ],
+                alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
         )
@@ -167,6 +173,13 @@ class GraphApp(ft.Column):
         
 
         self.controls = [
+            ft.Row(
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                controls=[
+                    ft.Text("Табулирование параметрической функции", size=24, weight=ft.FontWeight.BOLD),
+                    ft.TextButton(text="Информация о програмисте", icon=ft.Icons.INFO, on_click= lambda e: show_programmer_info(page))
+                ]
+            ),
             ft.Row(expand=1,controls=[
                 self.params_container,
                 self.func_image_container
@@ -204,6 +217,9 @@ class GraphApp(ft.Column):
             bool(self.k1_input.error_text),
             bool(self.k_input.error_text),
             bool(self.kd_input.error_text)]:
+
+            show_error_dialog(self.page, "Неправильно заданы параметры функции")
+
             return
         
         self.x_values, self.y_values = function_compute(
@@ -243,7 +259,7 @@ def main(page: ft.Page):
     page.padding = 20
     page.spacing = 0
 
-    app = GraphApp()
+    app = GraphApp(page)
     page.add(app)
     app.on_compute(None)
 
