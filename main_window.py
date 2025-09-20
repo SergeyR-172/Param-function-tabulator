@@ -7,6 +7,18 @@ import matplotlib
 import matplotlib.pyplot as plt
 from flet.matplotlib_chart import MatplotlibChart
 
+
+# Унифицированные цвета для UI
+PRIMARY_COLOR = "#1976d2"
+SECONDARY_COLOR = "#f5f5f5"
+ACCENT_COLOR = "#42a5f5"
+TEXT_COLOR = "#212121"
+BACKGROUND_COLOR = "#fafafa"
+CONTAINER_COLOR = "#ffffff"
+SUCCESS_COLOR = "#4caf50"
+ERROR_COLOR = "#f44336"
+
+
 class ParamInput(ft.TextField):
     def __init__(self, label, value, width, helper_text, validate_input = None):
         super().__init__()
@@ -14,6 +26,11 @@ class ParamInput(ft.TextField):
         self.value = value
         self.width = width
         self.helper_text = helper_text
+        self.bgcolor = CONTAINER_COLOR
+        self.border_color = PRIMARY_COLOR
+        self.focused_border_color = ACCENT_COLOR
+        self.border_radius = 8
+        self.text_style = ft.TextStyle(color=TEXT_COLOR)
 
         if validate_input:
             self.on_change = lambda e: validate_input(self)
@@ -25,6 +42,7 @@ class GraphApp(ft.Column):
         self.expand = True
         self.alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+        self.spacing = 20
 
         self.n_input = ParamInput("Количество точек N (минимум 2)", "15", 200, "Введите целое число ≥ 2", n_validate)
         self.a_input = ParamInput("Параметр функции a (a > 0)", "1", 200, "Введите положительное число", a_validate)
@@ -32,7 +50,14 @@ class GraphApp(ft.Column):
         self.k_input = ParamInput(f"Коэффициент k (k > {self.k1_input.value})", "1", 200, f"Должно быть больше {self.k1_input.value}", lambda field: k_validate(field, self.k1_input))
         self.kd_input = ParamInput("Коэффициент для шага изменения аргумента (kd > 0)", "0.05", 200, "Введите положительное число", kd_validate)
 
-        self.compute_button = ft.Button(text="Вычислить",on_click=self.on_compute)
+        self.compute_button = ft.ElevatedButton(
+            text="Вычислить",
+            on_click=self.on_compute,
+            bgcolor=PRIMARY_COLOR,
+            color="white",
+            width=150,
+            height=50,
+        )
 
         function_image = ft.Image(
             fit=ft.ImageFit.CONTAIN,
@@ -44,24 +69,31 @@ class GraphApp(ft.Column):
 
         self.data_table = ft.DataTable(
             columns=[
-                ft.DataColumn(ft.Text("N", weight=ft.FontWeight.BOLD, color="#1976d2")),
-                ft.DataColumn(ft.Text("X", weight=ft.FontWeight.BOLD, color="#1976d2")),
-                ft.DataColumn(ft.Text("Y", weight=ft.FontWeight.BOLD, color="#1976d2")),
+                ft.DataColumn(ft.Text("N", weight=ft.FontWeight.BOLD, color=PRIMARY_COLOR)),
+                ft.DataColumn(ft.Text("X", weight=ft.FontWeight.BOLD, color=PRIMARY_COLOR)),
+                ft.DataColumn(ft.Text("Y", weight=ft.FontWeight.BOLD, color=PRIMARY_COLOR)),
             ],
             rows=[],
-            heading_row_color="#e3f2fd",
-            border=ft.border.all(1, "#000000"),
+            heading_row_color=ft.Colors.with_opacity(0.1, PRIMARY_COLOR),
+            border=ft.border.all(1, "#e0e0e0"),
             border_radius=8,
-            horizontal_lines=ft.border.BorderSide(1, "#000000"),
-            vertical_lines=ft.border.BorderSide(1, "#000000"),
+            horizontal_lines=ft.border.BorderSide(0.5, "#e0e0e0"),
+            vertical_lines=ft.border.BorderSide(0.5, "#e0e0e0"),
+            data_row_min_height=30,
         )
 
         self.params_container = ft.Container(
-            bgcolor=ft.Colors.AMBER_400,
+            bgcolor=CONTAINER_COLOR,
             padding=20,
-            border_radius=20,
+            border_radius=15,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=5,
+                color=ft.Colors.with_opacity(0.2, "black"),
+            ),
             content=ft.Column(
                 controls=[
+                    ft.Text("Параметры функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
                     ft.Row(controls=[
                         self.n_input,
                         self.a_input,
@@ -71,38 +103,67 @@ class GraphApp(ft.Column):
                         self.k1_input,
                         self.k_input,
                         self.compute_button,
-                    ])
-                ]
+                    ],vertical_alignment=ft.CrossAxisAlignment.START)
+                ],
+                spacing=15,
             )
         )
 
         self.func_image_container = ft.Container(
-            bgcolor=ft.Colors.BLUE_ACCENT,
+            bgcolor=CONTAINER_COLOR,
             expand=True,
             padding=20,
-            border_radius=20,
-
-            content=function_image
+            border_radius=15,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=5,
+                color=ft.Colors.with_opacity(0.2, "black"),
+            ),
+            content=ft.Column(
+                controls=[
+                    ft.Text("Формула функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
+                    function_image
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
         )
 
         self.table_container = ft.Container(
-            bgcolor=ft.Colors.RED_ACCENT,
+            bgcolor=CONTAINER_COLOR,
             padding=20,
-            border_radius=20,
-
+            border_radius=15,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=5,
+                color=ft.Colors.with_opacity(0.2, "black"),
+            ),
             content=ft.Column(
-                controls=[self.data_table],
+                controls=[
+                    ft.Text("Таблица значений", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
+                    self.data_table
+                ],
                 scroll=ft.ScrollMode.AUTO,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
         )
 
         self.graph_container = ft.Container(
-            bgcolor=ft.Colors.CYAN_ACCENT,
+            bgcolor=CONTAINER_COLOR,
             expand=True,
             padding=20,
-            border_radius=20,
-        )   
+            border_radius=15,
+            shadow=ft.BoxShadow(
+                spread_radius=1,
+                blur_radius=5,
+                color=ft.Colors.with_opacity(0.2, "black"),
+            ),
+            content=ft.Column(
+                controls=[
+                    ft.Text("График функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+        )     
         
 
         self.controls = [
@@ -118,26 +179,31 @@ class GraphApp(ft.Column):
 
     def build_graph(self):
         fig, ax = plt.subplots(figsize=(12, 8), dpi=150)
-        ax.plot(self.x_values, self.y_values, 'bo-', linewidth=2, markersize=4)
+        ax.plot(self.x_values, self.y_values, 'bo-', linewidth=2, markersize=4, color=PRIMARY_COLOR)
         ax.grid(True, alpha=0.3)
-        ax.set_xlabel('Значение аргумента', fontsize=12)
-        ax.set_ylabel('Значение функции', fontsize=12)
-        ax.set_title(f'График параметрической функции Y = f(x, {self.a_input.value})', fontsize=14, pad=20)
-
-        ax.tick_params(axis='both', which='major', labelsize=10)
+        ax.set_xlabel('Значение аргумента', fontsize=12, color=TEXT_COLOR)
+        ax.set_ylabel('Значение функции', fontsize=12, color=TEXT_COLOR)
+        ax.set_title(f'График параметрической функции Y = f(x, {self.a_input.value})', fontsize=14, pad=20, color=TEXT_COLOR)
+        
+        ax.tick_params(axis='both', which='major', labelsize=10, colors=TEXT_COLOR)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_color('#e0e0e0')
+        ax.spines['bottom'].set_color('#e0e0e0')
+        
+        fig.patch.set_facecolor(CONTAINER_COLOR)
+        ax.set_facecolor(CONTAINER_COLOR)
 
         return fig
 
 
     def on_compute(self, e):             
         if True in [
-            self.n_input.error_text,
-            self.a_input.error_text,
-            self.k1_input.error_text,
-            self.k_input.error_text,
-            self.kd_input.error_text]:
+            bool(self.n_input.error_text),
+            bool(self.a_input.error_text),
+            bool(self.k1_input.error_text),
+            bool(self.k_input.error_text),
+            bool(self.kd_input.error_text)]:
             return
         
         self.x_values, self.y_values = function_compute(
@@ -163,13 +229,19 @@ class GraphApp(ft.Column):
         
         
         new_graph = MatplotlibChart(figure=self.build_graph(), expand=True)
-        self.graph_container.content = new_graph
+        self.graph_container.content.controls = [
+            ft.Text("График функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
+            new_graph
+        ]
         self.graph_container.update()
 
 def main(page: ft.Page):
-    page.title = "Табулирование параметрической функции"
+    page.title = "Табулятор параметрических функций"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.vertical_alignment = ft.MainAxisAlignment.START
+    page.bgcolor = BACKGROUND_COLOR
+    page.padding = 20
+    page.spacing = 0
 
     app = GraphApp()
     page.add(app)
