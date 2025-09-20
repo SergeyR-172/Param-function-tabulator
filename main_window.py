@@ -43,7 +43,8 @@ class GraphApp(ft.Column):
         self.expand = True
         self.alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-        self.spacing = 20
+        self.scroll = ft.ScrollMode.AUTO
+
 
         self.n_input = ParamInput("Количество точек N (минимум 2)", "15", 200, "Введите целое число ≥ 2", n_validate)
         self.a_input = ParamInput("Параметр функции a (a > 0)", "1", 200, "Введите положительное число", a_validate)
@@ -65,9 +66,9 @@ class GraphApp(ft.Column):
 
         function_image = ft.Image(
             fit=ft.ImageFit.CONTAIN,
+            expand=True,
             repeat=ft.ImageRepeat.NO_REPEAT,
             gapless_playback=False,
-            expand=True,
         )
         if os.path.exists("function_image.png"):
             function_image.src = "function_image.png"
@@ -90,7 +91,9 @@ class GraphApp(ft.Column):
         self.params_container = ft.Container(
             bgcolor=CONTAINER_COLOR,
             padding=20,
+            margin=5,
             border_radius=15,
+            height=240,
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=5,
@@ -116,9 +119,11 @@ class GraphApp(ft.Column):
 
         self.func_image_container = ft.Container(
             bgcolor=CONTAINER_COLOR,
-            expand=True,
             padding=20,
+            margin=5,
             border_radius=15,
+            height=240,
+            expand=True,
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=5,
@@ -129,7 +134,7 @@ class GraphApp(ft.Column):
                     ft.Text("Формула функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
                     function_image
                 ],
-                alignment=ft.MainAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.START,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
         )
@@ -137,7 +142,9 @@ class GraphApp(ft.Column):
         self.table_container = ft.Container(
             bgcolor=CONTAINER_COLOR,
             padding=20,
+            margin=5,
             border_radius=15,
+            height=800,
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=5,
@@ -155,9 +162,11 @@ class GraphApp(ft.Column):
 
         self.graph_container = ft.Container(
             bgcolor=CONTAINER_COLOR,
-            expand=True,
             padding=20,
+            margin=5,
             border_radius=15,
+            height=800,  # Set fixed height to 800
+            expand=True,  # Allow horizontal expansion
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=5,
@@ -169,7 +178,7 @@ class GraphApp(ft.Column):
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-        )     
+        )
         
 
         self.controls = [
@@ -180,18 +189,18 @@ class GraphApp(ft.Column):
                     ft.TextButton(text="Информация о програмисте", icon=ft.Icons.INFO, on_click= lambda e: show_programmer_info(page))
                 ]
             ),
-            ft.Row(expand=1,controls=[
+            ft.Row(controls=[  # Remove expand=1 to prevent excessive height
                 self.params_container,
                 self.func_image_container
-            ], vertical_alignment=ft.CrossAxisAlignment.STRETCH),
-            ft.Row(expand=2,controls=[
+            ], vertical_alignment=ft.CrossAxisAlignment.START),  # Use START instead of STRETCH
+            ft.Row(controls=[  # Remove expand=2 to prevent excessive height
                 self.table_container,
                 self.graph_container
-            ], vertical_alignment=ft.CrossAxisAlignment.STRETCH),
+            ], vertical_alignment=ft.CrossAxisAlignment.START),  # Use START instead of STRETCH
         ]
 
     def build_graph(self):
-        fig, ax = plt.subplots(figsize=(12, 8), dpi=150)
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=100)  # Adjust figure size to fit within 800px height container
         ax.plot(self.x_values, self.y_values, 'bo-', linewidth=2, markersize=4, color=PRIMARY_COLOR)
         ax.grid(True, alpha=0.3)
         ax.set_xlabel('Значение аргумента', fontsize=12, color=TEXT_COLOR)
