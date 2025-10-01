@@ -1,6 +1,11 @@
 import flet as ft
 
-def n_validate(input_field: ft.TextField):
+def n_validate(input_field: ft.TextField) -> None:
+    if input_field.value is None:
+        input_field.error_text = "Поле не может быть пустым"
+        input_field.update()
+        return
+        
     try:
         value = int(input_field.value)
         if value < 2:
@@ -12,7 +17,12 @@ def n_validate(input_field: ft.TextField):
     input_field.update()
 
 
-def a_validate(input_field: ft.TextField):
+def a_validate(input_field: ft.TextField) -> None:
+    if input_field.value is None:
+        input_field.error_text = "Поле не может быть пустым"
+        input_field.update()
+        return
+        
     try:
         value = float(input_field.value)
         if value <= 0:
@@ -20,12 +30,18 @@ def a_validate(input_field: ft.TextField):
         else:
             input_field.error_text = None
     except ValueError:
-        input_field.error_text = "Введите целое число"
+        input_field.error_text = "Введите число"
     input_field.update()
 
 
 
-def k1_validate(k1_field: ft.TextField, k_field: ft.TextField):
+def k1_validate(k1_field: ft.TextField, k_field: ft.TextField) -> None:
+    if k1_field.value is None:
+        k1_field.error_text = "Поле не может быть пустым"
+        k1_field.update()
+        k_validate(k_field, k1_field)
+        return
+    
     try:
         value = float(k1_field.value)
         if value <= 0:
@@ -39,7 +55,13 @@ def k1_validate(k1_field: ft.TextField, k_field: ft.TextField):
     k_validate(k_field, k1_field)
 
 
-def k_validate(k_field: ft.TextField, k1_field: ft.TextField):
+def k_validate(k_field: ft.TextField, k1_field: ft.TextField) -> None:
+    if k_field.value is None or k1_field.value is None:
+        if k_field.value is None:
+            k_field.error_text = "Поле не может быть пустым"
+        k_field.update()
+        return
+    
     try:
         k = float(k_field.value)
         k1 = float(k1_field.value)
@@ -54,7 +76,12 @@ def k_validate(k_field: ft.TextField, k1_field: ft.TextField):
     k_field.update()
 
 
-def kd_validate(input_field: ft.TextField):
+def kd_validate(input_field: ft.TextField) -> None:
+    if input_field.value is None:
+        input_field.error_text = "Поле не может быть пустым"
+        input_field.update()
+        return
+        
     try:
         value = float(input_field.value)
         if value <= 0:
@@ -62,5 +89,5 @@ def kd_validate(input_field: ft.TextField):
         else:
             input_field.error_text = None
     except ValueError:
-        input_field.error_text = "Введите целое число"
+        input_field.error_text = "Введите число"
     input_field.update()

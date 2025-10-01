@@ -1,6 +1,7 @@
 import numpy as np
+from typing import Tuple
 
-def function_compute(n, a, k1, k, kd):
+def function_compute(n: int, a: float, k1: float, k: float, kd: float) -> Tuple[np.ndarray, np.ndarray]:
     x1 = k1 * a
     dx = kd * a
     

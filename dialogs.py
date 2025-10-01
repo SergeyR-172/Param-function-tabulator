@@ -1,6 +1,6 @@
 import flet as ft
 
-def show_programmer_info(page: ft.Page):
+def show_programmer_info(page: ft.Page) -> None:
     info_dlg = ft.AlertDialog(
         title=ft.Text("Информация о программисте", size=22, weight=ft.FontWeight.BOLD, color="#1976d2"),
         content=ft.Container(
@@ -40,7 +40,7 @@ def show_programmer_info(page: ft.Page):
     page.update() 
 
 
-def show_error_dialog(page: ft.Page, message):
+def show_error_dialog(page: ft.Page, message: str) -> None:
     dlg = ft.AlertDialog(
         title=ft.Text("Ошибка", size=22, weight=ft.FontWeight.BOLD, color="#d32f2f"),
         content=ft.Container(

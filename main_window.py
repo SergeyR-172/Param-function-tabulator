@@ -21,7 +21,7 @@ ERROR_COLOR = "#f44336"
 
 
 class ParamInput(ft.TextField):
-    def __init__(self, label, value, width, helper_text, validate_input = None):
+    def __init__(self, label: str, value: str, width: int, helper_text: str, validate_input = None):
         super().__init__()
         self.label = label
         self.value = value
@@ -44,6 +44,9 @@ class GraphApp(ft.Column):
         self.alignment = ft.MainAxisAlignment.CENTER
         self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
         self.scroll = ft.ScrollMode.AUTO
+        self.page: ft.Page = page
+        self.x_values = []
+        self.y_values = []
 
 
         self.n_input = ParamInput("Количество точек N (минимум 2)", "15", 200, "Введите целое число ≥ 2", n_validate)
@@ -165,8 +168,8 @@ class GraphApp(ft.Column):
             padding=20,
             margin=5,
             border_radius=15,
-            height=800,  # Set fixed height to 800
-            expand=True,  # Allow horizontal expansion
+            height=800,
+            expand=True,
             shadow=ft.BoxShadow(
                 spread_radius=1,
                 blur_radius=5,
@@ -189,23 +192,23 @@ class GraphApp(ft.Column):
                     ft.TextButton(text="Информация о програмисте", icon=ft.Icons.INFO, on_click= lambda e: show_programmer_info(page))
                 ]
             ),
-            ft.Row(controls=[  # Remove expand=1 to prevent excessive height
+            ft.Row(controls=[
                 self.params_container,
                 self.func_image_container
-            ], vertical_alignment=ft.CrossAxisAlignment.START),  # Use START instead of STRETCH
-            ft.Row(controls=[  # Remove expand=2 to prevent excessive height
+            ], vertical_alignment=ft.CrossAxisAlignment.START),
+            ft.Row(controls=[
                 self.table_container,
                 self.graph_container
-            ], vertical_alignment=ft.CrossAxisAlignment.START),  # Use START instead of STRETCH
+            ], vertical_alignment=ft.CrossAxisAlignment.START),
         ]
 
     def build_graph(self):
-        fig, ax = plt.subplots(figsize=(10, 6), dpi=100)  # Adjust figure size to fit within 800px height container
+        fig, ax = plt.subplots(figsize=(10, 6), dpi=100)
         ax.plot(self.x_values, self.y_values, 'bo-', linewidth=2, markersize=4, color=PRIMARY_COLOR)
         ax.grid(True, alpha=0.3)
         ax.set_xlabel('Значение аргумента', fontsize=12, color=TEXT_COLOR)
         ax.set_ylabel('Значение функции', fontsize=12, color=TEXT_COLOR)
-        ax.set_title(f'График параметрической функции Y = f(x, {self.a_input.value})', fontsize=14, pad=20, color=TEXT_COLOR)
+        ax.set_title(f'График параметрической функции Y = f(x, {self.a_input.value or "1"})', fontsize=14, pad=20, color=TEXT_COLOR)
         
         ax.tick_params(axis='both', which='major', labelsize=10, colors=TEXT_COLOR)
         ax.spines['top'].set_visible(False)
@@ -219,7 +222,7 @@ class GraphApp(ft.Column):
         return fig
 
 
-    def on_compute(self, e):             
+    def on_compute(self, e):
         if True in [
             bool(self.n_input.error_text),
             bool(self.a_input.error_text),
@@ -230,37 +233,56 @@ class GraphApp(ft.Column):
             show_error_dialog(self.page, "Неправильно заданы параметры функции")
 
             return
+
+        n_value = self.n_input.value
+        a_value = self.a_input.value
+        k1_value = self.k1_input.value
+        k_value = self.k_input.value
+        kd_value = self.kd_input.value
+        
+        if n_value is None or a_value is None or k1_value is None or k_value is None or kd_value is None:
+            show_error_dialog(self.page, "Значения параметров не могут быть пустыми")
+            return
         
         self.x_values, self.y_values = function_compute(
-            int(self.n_input.value), 
-            float(self.a_input.value), 
-            float(self.k1_input.value), 
-            float(self.k_input.value), 
-            float(self.kd_input.value))
+            int(n_value),
+            float(a_value),
+            float(k1_value),
+            float(k_value),
+            float(kd_value))
 
-        self.data_table.rows.clear()
+        if self.data_table.rows is not None:
+            self.data_table.rows.clear()
 
-        for i in range(len(self.x_values)):
-            self.data_table.rows.append(
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text(f"{i+1}")),
-                        ft.DataCell(ft.Text(f"{self.x_values[i]:.2f}")),
-                        ft.DataCell(ft.Text(f"{self.y_values[i]:.3f}")),
-                    ]
-                )
-            )
+            for i in range(len(self.x_values)):
+                if self.data_table.rows is not None:
+                    self.data_table.rows.append(
+                        ft.DataRow(
+                            cells=[
+                                ft.DataCell(ft.Text(f"{i+1}")),
+                                ft.DataCell(ft.Text(f"{self.x_values[i]:.2f}")),
+                                ft.DataCell(ft.Text(f"{self.y_values[i]:.3f}")),
+                            ]
+                        )
+                    )
+        
         self.data_table.update()
         
         
         new_graph = MatplotlibChart(figure=self.build_graph(), expand=True)
-        self.graph_container.content.controls = [
-            ft.Text("График функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
-            new_graph
-        ]
+        
+        if self.graph_container.content is not None:
+            self.graph_container.content = ft.Column(
+                controls=[
+                    ft.Text("График функции", size=18, weight=ft.FontWeight.W_500, color=PRIMARY_COLOR),
+                    new_graph
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        
         self.graph_container.update()
 
-def main(page: ft.Page):
+def main(page: ft.Page) -> None:
     page.title = "Табулятор параметрических функций"
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.vertical_alignment = ft.MainAxisAlignment.START
